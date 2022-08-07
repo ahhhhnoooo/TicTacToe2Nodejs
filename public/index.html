@@ -1,0 +1,90 @@
+<html>
+
+<head>
+    <style>
+        #game {
+            display: flex;
+            flex-flow: column nowrap;
+        }
+
+        #game .row {
+            display: flex;
+            flex-flow: row nowrap;
+        }
+
+        #game .cell {
+            height: 1em;
+            width: 1em;
+            border: 1px solid black;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #game .end {
+            z-index: 999;
+            position: absolute;
+            background: #888;
+            color: #fff;
+            opacity: 0.5;
+            height: 4em;
+            width: 4em;
+            text-align: center;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="game"></div>
+    <p>Hello Test</p>
+</body>
+
+<script>
+    /*
+    // Create WebSocket connection to the nodejs server
+    const socket = new WebSocket('ws://localhost:8080');
+    let player = "";
+    let spaces = [];
+    let gameElement = document.getElementById("game");
+    let gameRowElement, gameCellElement;
+    for (let index = 0; index < 9; ++index) {
+        if (index % 3 === 0) {
+            gameRowElement = document.createElement("div");
+            gameRowElement.className = "row";
+            gameElement?.appendChild(gameRowElement);
+        }
+        gameCellElement = document.createElement("div");
+        gameCellElement.className = "cell";
+        gameRowElement.appendChild(gameCellElement);
+        this.spaces.push(gameCellElement)
+        gameCellElement.onclick = (() => {
+            socket.send("click:" + index + ":" + player)
+        });
+    }
+
+    // Connection opened
+    socket.addEventListener('open', function (event) {
+        socket.send('Hello Server!');
+    });
+
+    // Listen for messages
+    socket.addEventListener('message', function (event) {
+        console.log('Message from server ', event.data);
+    });
+
+    onClickSpace = (index) => {
+        this.spaces[index].innerText = this.game.turn;
+        this.game.onClick(index);
+        if (this.game.winner) {
+            let gameElement = document.getElementById("game");
+            let gameEndElement = document.createElement("div");
+            gameEndElement.className = "end";
+            gameEndElement.innerText = this.game.winner + " WINS";
+            gameElement.appendChild(gameEndElement);
+        }
+    }
+
+*/
+</script>
+
+</html>
