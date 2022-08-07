@@ -1,2 +1,3 @@
 # TicTacToe2Nodejs
-Multiplayer TicTacToe with Node.js and MongoDB
+Multiplayer TicTacToe with Node.js and WebSockets
+
