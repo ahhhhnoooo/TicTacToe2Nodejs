@@ -35,57 +35,69 @@
 </head>
 
 <body>
-    <div id="game">Loading...</div>
+    <div id="game"></div>
+    <div id="loading">Loading...</div>
 </body>
 
 <script>
-    const socket = new WebSocket('ws://localhost:8080');
-    // Connection opened
-    socket.addEventListener('open', function (event) {
-        socket.send('Hello Server!');
-    });
 
+let loadingElement = document.getElementById("loading");
+    let gameElement = document.getElementById("game");
+    let gameRoleElement = document.createElement("div");
+    let gameTurnElement = document.createElement("div");
+    let gameCellElements = [];
+    let gameRowElement, gameCellElement;
+
+    let myrole = "";
+
+    const socket = new WebSocket('ws://localhost:8080');
     // Listen for messages
     socket.addEventListener('message', function (event) {
-        console.log('Message from server ', event.data);
+        
+        //Hide the loading message
+        loadingElement.style = "display:none";
+        
+        let game = JSON.parse(event.data);
+
+        //The first message is just the role
+        if(game.role){
+            myrole = game.role;
+            gameRoleElement.innerText = "My Role: " + myrole;
+            return;
+        }
+
+        //Update the DOM with the data from board
+        for (let index = 0; index < 9; ++index) {
+            gameCellElements[index].innerText = game.board[index] ? game.board[index] : "";
+        }
+        gameTurnElement.innerText = "Turn: " + game.turn;
+        if(game.winner){
+            let gameEndElement = document.createElement("div");
+            gameEndElement.className = "winner";
+            gameEndElement.innerText = game.winner + " WINS";
+            gameElement.appendChild(gameEndElement);
+        }
     });
-    
-    /*
-    // Create WebSocket connection to the nodejs server
-    const socket = new WebSocket('ws://localhost:8080');
-    let player = "";
-    let spaces = [];
-    let gameElement = document.getElementById("game");
-    let gameRowElement, gameCellElement;
+
+    //Put all of the elements on the DOM. This should happen only once
+    gameElement?.append(gameRoleElement, gameTurnElement);
     for (let index = 0; index < 9; ++index) {
         if (index % 3 === 0) {
             gameRowElement = document.createElement("div");
             gameRowElement.className = "row";
-            gameElement?.appendChild(gameRowElement);
+            gameElement?.append(gameRowElement);
         }
         gameCellElement = document.createElement("div");
         gameCellElement.className = "cell";
-        gameRowElement.appendChild(gameCellElement);
-        this.spaces.push(gameCellElement)
         gameCellElement.onclick = (() => {
-            socket.send("click:" + index + ":" + player)
+            socket.send(JSON.stringify({
+                index:index,
+                role:myrole
+            }))
         });
+        gameRowElement.append(gameCellElement);
+        gameCellElements.push(gameCellElement);
     }
-
-
-    onClickSpace = (index) => {
-        this.spaces[index].innerText = this.game.turn;
-        this.game.onClick(index);
-        if (this.game.winner) {
-            let gameElement = document.getElementById("game");
-            let gameEndElement = document.createElement("div");
-            gameEndElement.className = "end";
-            gameEndElement.innerText = this.game.winner + " WINS";
-            gameElement.appendChild(gameEndElement);
-        }
-    }
-
-*/
 </script>
 
 </html>

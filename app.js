@@ -4,16 +4,37 @@ import { WebSocketServer } from 'ws';
 
 //TODO Put this in a db
 let game = {
-  //Available roles in the game
-  available:['x','o'],
+  //Available roles in the game 
+  //In reverse order because of pop...
+  available: ['o', 'x'],
   //Whose turn it currently is
-  turn:'x',
+  turn: 'x',
   //Who won the game
-  winner:null,
+  winner: null,
   //The game board state
-  board:[]
+  board: []
 }
-let sockets = [];
+
+//Manually checking for the winner
+const checkWinner = () => {
+  if (
+    (game.turn === game.board[0] && game.turn === game.board[1] && game.turn === game.board[2]) ||
+    (game.turn === game.board[3] && game.turn === game.board[4] && game.turn === game.board[5]) ||
+    (game.turn === game.board[6] && game.turn === game.board[7] && game.turn === game.board[8]) ||
+    (game.turn === game.board[0] && game.turn === game.board[3] && game.turn === game.board[6]) ||
+    (game.turn === game.board[1] && game.turn === game.board[4] && game.turn === game.board[7]) ||
+    (game.turn === game.board[2] && game.turn === game.board[5] && game.turn === game.board[8]) ||
+    (game.turn === game.board[0] && game.turn === game.board[4] && game.turn === game.board[8]) ||
+    (game.turn === game.board[2] && game.turn === game.board[4] && game.turn === game.board[6])) {
+    game.winner = game.turn;
+    return true;
+  } else { return false; }
+}
+
+//Change to the other player's turn
+const nextTurn = () => {
+  game.turn = (game.turn === 'x') ? 'o' : 'x';
+}
 
 const server = createServer(function (req, res) {
   fs.readFile('./public/index.html')
@@ -26,21 +47,55 @@ const server = createServer(function (req, res) {
     })
     .catch((err) => {
       res.writeHead(404);
-      console.log(err)
       res.end();
+      console.log(err)
     })
 });
 
-const wss = new WebSocketServer({ server:server });
-
+let sockets = [];
+const wss = new WebSocketServer({ server: server });
 wss.on('connection', function connection(socket) {
+
   sockets.push(socket);
-  
+  //TODO Does this have any concurrency issues accessing "game"?
+  //Assign a role to this connection
+  //Roles are 'x', 'o', and 's' (spectator)
+  let role = game.available.pop();
+  if (role === undefined) {
+    role = 's';
+  }
+
+  socket.send(JSON.stringify({ role: role }));
+
+  socket.send(JSON.stringify(game));
+
   socket.on('message', function message(data) {
-    console.log('received: %s', data);
+    let clickData = JSON.parse(data);
+    if (clickData.role === 's') {
+      //TODO What do to when a spectator clicks?
+      return;
+    }
+    //TODO What do to if a player clicks on a space already taken?
+    if (game.board[clickData.index]) {
+      return;
+    }
+    //TODO What do to if a player clicks out of turn?
+    if (game.turn !== clickData.role) {
+      return;
+    }
+    if (game.winner) {
+      return;
+    }
+    game.board[clickData.index] = clickData.role;
+    checkWinner();
+    nextTurn();
+
+    //Send update to all connected clients
+    for (let socket of sockets) {
+      socket.send(JSON.stringify(game));
+    }
   });
 
-  socket.send('something');
 });
 
 server.listen(8080);
