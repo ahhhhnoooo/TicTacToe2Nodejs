@@ -35,11 +35,21 @@
 </head>
 
 <body>
-    <div id="game"></div>
-    <p>Hello Test</p>
+    <div id="game">Loading...</div>
 </body>
 
 <script>
+    const socket = new WebSocket('ws://localhost:8080');
+    // Connection opened
+    socket.addEventListener('open', function (event) {
+        socket.send('Hello Server!');
+    });
+
+    // Listen for messages
+    socket.addEventListener('message', function (event) {
+        console.log('Message from server ', event.data);
+    });
+    
     /*
     // Create WebSocket connection to the nodejs server
     const socket = new WebSocket('ws://localhost:8080');
@@ -62,15 +72,6 @@
         });
     }
 
-    // Connection opened
-    socket.addEventListener('open', function (event) {
-        socket.send('Hello Server!');
-    });
-
-    // Listen for messages
-    socket.addEventListener('message', function (event) {
-        console.log('Message from server ', event.data);
-    });
 
     onClickSpace = (index) => {
         this.spaces[index].innerText = this.game.turn;

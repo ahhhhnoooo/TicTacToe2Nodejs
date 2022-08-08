@@ -1,42 +1,46 @@
 import { createServer } from 'http';
-import { parse } from 'url';
-const server = createServer(function (req, res) {
-    res.write('Hello World!'); //write a response to the client
-    res.end(); //end the response
-});
-/*
+import * as fs from 'node:fs/promises';
 import { WebSocketServer } from 'ws';
 
-const wss1 = new WebSocketServer({ noServer: true });
-const wss2 = new WebSocketServer({ noServer: true });
-
-wss1.on('connection', function connection(ws) {
-  // ...
-});
-
-wss2.on('connection', function connection(ws) {
-  // ...
-});
-server.on('upgrade', function upgrade(request, socket, head) {
-  const { pathname } = parse(request.url);
-
-  if (pathname === '/foo') {
-    wss1.handleUpgrade(request, socket, head, function done(ws) {
-      wss1.emit('connection', ws, request);
-    });
-  } else if (pathname === '/bar') {
-    wss2.handleUpgrade(request, socket, head, function done(ws) {
-      wss2.emit('connection', ws, request);
-    });
-  } else {
-    socket.destroy();
-  }
-});
-*/
-server.listen(8080);
-
-
-function printClient(){
-
-
+//TODO Put this in a db
+let game = {
+  //Available roles in the game
+  available:['x','o'],
+  //Whose turn it currently is
+  turn:'x',
+  //Who won the game
+  winner:null,
+  //The game board state
+  board:[]
 }
+let sockets = [];
+
+const server = createServer(function (req, res) {
+  fs.readFile('./public/index.html')
+    .then((result) => {
+      res.writeHead(200, {
+        'Content-Type': 'text/html'
+      });
+      res.write(result);
+      res.end();
+    })
+    .catch((err) => {
+      res.writeHead(404);
+      console.log(err)
+      res.end();
+    })
+});
+
+const wss = new WebSocketServer({ server:server });
+
+wss.on('connection', function connection(socket) {
+  sockets.push(socket);
+  
+  socket.on('message', function message(data) {
+    console.log('received: %s', data);
+  });
+
+  socket.send('something');
+});
+
+server.listen(8080);
